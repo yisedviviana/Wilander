@@ -1,0 +1,492 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Lúdica y Territorio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: un sendero de cuatro paradas (estaciones); al elegir una, se abre su ruta semanal debajo. */
+:root{
+  --bg:#EBF0E8; --surface:#F7F9F4; --ink:#14281C; --muted:#4A5F50; --line:#C5D2C2;
+  --moss:#3B7A4C; --clay:#B0502C; --sun:#B27A00; --sky:#2B6B8A;
+  --ridge1:#CFDCCB; --ridge2:#B5C9B2;
+  --f-display:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --f-body:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'DM Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1912; --surface:#15241A; --ink:#E5EEE2; --muted:#9BB1A0; --line:#2A3F31;
+  --moss:#72C189; --clay:#E58E66; --sun:#EBBB4C; --sky:#70B5D6;
+  --ridge1:#16281D; --ridge2:#1D3626; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1912; --surface:#15241A; --ink:#E5EEE2; --muted:#9BB1A0; --line:#2A3F31;
+  --moss:#72C189; --clay:#E58E66; --sun:#EBBB4C; --sky:#70B5D6;
+  --ridge1:#16281D; --ridge2:#1D3626; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;padding-inline:16px}
+.wrap{max-width:1040px;margin-inline:auto}
+h1,h2,h3{font-family:var(--f-display);line-height:1.1;text-wrap:balance;margin:0}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--f-mono)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:-16px;padding:10px 16px}
+.bar .wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}
+.bar nav{display:flex;gap:4px 14px;flex-wrap:wrap;font-size:14px;font-weight:500}
+.bar nav a{text-decoration:none;color:var(--muted);padding:4px 2px}
+.bar nav a:hover{color:var(--ink)}
+.prog{display:flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.prog .track{width:110px;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.prog .fill{height:100%;width:0;background:var(--moss);transition:width .3s}
+
+/* hero */
+.hero{position:relative;padding-block:56px 0}
+.hero h1{font-size:clamp(40px,8vw,84px);font-weight:800;letter-spacing:-.02em;max-width:14ch}
+.hero h1 span{color:var(--moss)}
+.hero .sub{margin-top:16px;max-width:60ch;color:var(--muted);font-size:17px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chip{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);background:var(--surface);padding:4px 10px;border-radius:999px}
+.ridge{display:block;width:100%;height:auto;margin-top:28px}
+.q{background:var(--ink);color:var(--bg);padding:28px clamp(18px,4vw,40px);border-radius:6px;margin-top:-1px}
+.q .eyebrow{color:var(--bg);opacity:.7}
+.q p.big{font-family:var(--f-display);font-weight:700;font-size:clamp(22px,3.6vw,34px);line-height:1.2;margin-top:8px;max-width:30ch;text-wrap:balance}
+
+section{padding-block:56px 0}
+section>h2{font-size:clamp(28px,4.4vw,42px);font-weight:700;margin-top:6px}
+.lead{max-width:62ch;color:var(--muted);margin-top:12px}
+
+/* hilo conductor */
+.thread{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px;counter-reset:t}
+.thread div{border-top:3px solid var(--st);padding-top:10px;font-size:14.5px}
+.thread b{display:block;font-family:var(--f-display);font-size:18px;margin-bottom:2px}
+.thread small{display:block;color:var(--muted);margin-top:6px;font-size:13px}
+
+/* sendero */
+.trail{position:relative;margin-top:28px}
+.stops{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;position:relative}
+.stops::before{content:"";position:absolute;left:8%;right:8%;top:22px;border-top:3px dashed var(--line)}
+.stop{position:relative}
+.stop button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:6px;width:100%;padding:0 4px 14px;text-align:left}
+.stop .dot{width:44px;height:44px;border-radius:50%;background:var(--bg);border:3px solid var(--st);display:grid;place-items:center;font-family:var(--f-mono);font-weight:500;font-size:14px;position:relative;z-index:1}
+.stop .body{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--st);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:4px;flex:1}
+.stop h3{font-size:22px;font-weight:700}
+.stop .kind{font-size:13px;color:var(--muted)}
+.stop .meta{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-top:6px}
+.stop .done{font-family:var(--f-mono);font-size:12px;margin-top:8px}
+.stop button[aria-selected="true"] .dot{background:var(--st);color:var(--bg)}
+.stop button[aria-selected="true"] .body{outline:2px solid var(--st);outline-offset:1px}
+.stop button:hover .body{border-color:var(--st)}
+
+/* weights */
+.weights{margin-top:30px}
+.wbar{display:flex;height:34px;border-radius:5px;overflow:hidden;gap:2px}
+.wbar div{background:var(--st);min-width:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:12px;color:var(--bg);font-weight:500}
+.wlegend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:13.5px;color:var(--muted)}
+.wlegend i{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--st);margin-right:6px}
+
+/* panel */
+.panel{margin-top:36px;background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--st);border-radius:6px;padding:clamp(18px,3.5vw,40px)}
+.panel-head{display:flex;flex-wrap:wrap;gap:14px 28px;justify-content:space-between;align-items:flex-end}
+.panel-head h2{font-size:clamp(32px,5.4vw,54px);font-weight:800;letter-spacing:-.01em}
+.verb{display:inline-block;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:999px;border:1px solid var(--st);background:color-mix(in srgb,var(--st) 14%,var(--surface));margin-bottom:10px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-top:24px}
+.facts div{background:var(--surface);padding:10px 14px;min-width:0}
+.facts dt{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:2px 0 0;font-weight:600;overflow-wrap:anywhere}
+.cols{display:grid;grid-template-columns:1.15fr 1fr;gap:28px 40px;margin-top:32px}
+.cols>div{min-width:0}
+.cols h3,.sub-h{font-size:20px;font-weight:700;margin-bottom:8px}
+.cols p+p{margin-top:10px}
+.qcp{display:grid;gap:12px}
+.qcp div{border-left:3px solid var(--st);padding-left:12px}
+.qcp b{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block}
+.block{margin-top:40px}
+
+/* time bar + steps */
+.tbar{display:flex;height:22px;border-radius:4px;overflow:hidden;gap:2px;margin-top:12px}
+.tbar span{display:block;min-width:2px}
+.t-in{background:color-mix(in srgb,var(--st) 32%,var(--surface))}
+.t-out{background:var(--st)}
+.t-int{background:var(--ink)}
+.tleg{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:8px;font-size:13px;color:var(--muted)}
+.tleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.steps{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:0}
+.step{display:grid;grid-template-columns:auto 1fr auto;gap:6px 14px;padding:14px 0;border-top:1px solid var(--line);align-items:start}
+.step:last-child{border-bottom:1px solid var(--line)}
+.step input{width:22px;height:22px;accent-color:var(--st);margin:2px 0 0;cursor:pointer}
+.step .tx{min-width:0}
+.step .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;align-items:center}
+.tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:3px}
+.tag.in{background:color-mix(in srgb,var(--st) 20%,var(--surface));border:1px solid color-mix(in srgb,var(--st) 55%,var(--surface))}
+.tag.out{background:var(--st);color:var(--bg)}
+.tag.int{background:var(--ink);color:var(--bg)}
+.who{font-size:13px;color:var(--muted)}
+.step .min{font-family:var(--f-mono);font-size:13px;white-space:nowrap;color:var(--muted)}
+.step.checked .tx p{opacity:.55;text-decoration:line-through;text-decoration-thickness:1px}
+.off{display:block;margin-top:6px;font-size:14px;border-left:3px solid var(--sun);padding-left:10px;color:var(--muted)}
+.off b{color:var(--ink)}
+
+/* criteria */
+.crit{display:grid;grid-template-columns:1fr 1.4fr;gap:20px 28px;margin-top:14px}
+.card{border:1px solid var(--line);border-radius:6px;padding:18px;min-width:0}
+.card h4{font-family:var(--f-display);font-size:18px;margin:0 0 4px}
+.card .tagline{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:block}
+.card ul{margin:10px 0 0;padding-left:18px;display:grid;gap:6px;font-size:15px}
+.crow{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.crow:first-of-type{border-top:0}
+.crow .pct{font-family:var(--f-display);font-weight:800;font-size:26px;line-height:1;color:var(--st);min-width:58px}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:20px 28px;margin-top:14px}
+.res ul{margin:6px 0 0;padding-left:18px;font-size:15px;display:grid;gap:4px}
+.nav2{display:flex;justify-content:space-between;gap:12px;margin-top:36px;flex-wrap:wrap}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;font-weight:600;font-size:15px;border:1.5px solid var(--ink);border-radius:999px;padding:9px 20px}
+.btn:hover{background:var(--ink);color:var(--bg)}
+.btn[hidden]{display:none}
+.btn:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.note{background:color-mix(in srgb,var(--st) 10%,var(--surface));border-radius:6px;padding:16px 18px;font-size:15.5px;margin-top:12px}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:1.5fr 1fr;gap:24px 32px;margin-top:26px;align-items:start}
+.calc>*{min-width:0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--f-mono)}
+.gin{width:62px;font:inherit;font-family:var(--f-mono);padding:6px 6px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink);text-align:center}
+.gin:focus-visible{outline:3px solid var(--sky);outline-offset:1px}
+.st-name{display:flex;align-items:center;gap:8px;font-weight:600}
+.st-name i{width:10px;height:10px;border-radius:50%;background:var(--st);flex:none}
+.result{background:var(--ink);color:var(--bg);border-radius:6px;padding:22px}
+.result .eyebrow{color:var(--bg);opacity:.7}
+.result .score{font-family:var(--f-display);font-weight:800;font-size:72px;line-height:1;margin-top:6px;font-variant-numeric:tabular-nums}
+.result .lvl{font-size:18px;font-weight:600;margin-top:4px}
+.result p.small{font-size:13px;opacity:.8;margin-top:12px}
+.formula{font-family:var(--f-mono);font-size:13px;background:var(--surface);border:1px solid var(--line);padding:10px 14px;border-radius:5px;margin-top:16px;overflow-x:auto;white-space:nowrap}
+
+/* SIEE */
+.siee{display:grid;gap:0;margin-top:22px}
+.siee div{display:grid;grid-template-columns:minmax(160px,1fr) 2.4fr;gap:6px 24px;padding:14px 0;border-top:1px solid var(--line)}
+.siee div:last-child{border-bottom:1px solid var(--line)}
+.siee b{font-family:var(--f-display);font-size:17px}
+.refs{columns:2;column-gap:36px;font-size:14px;color:var(--muted);margin-top:18px}
+.refs p{break-inside:avoid;margin-bottom:10px;padding-left:1.4em;text-indent:-1.4em;overflow-wrap:anywhere}
+footer{padding-block:56px 48px;color:var(--muted);font-size:14px}
+footer b{color:var(--ink)}
+
+@media (max-width:820px){
+  .stops{grid-template-columns:1fr;gap:0}
+  .stops::before{left:21px;right:auto;top:10px;bottom:10px;border-top:0;border-left:3px dashed var(--line)}
+  .stop button{flex-direction:row;gap:14px;padding-bottom:12px;align-items:flex-start}
+  .thread{grid-template-columns:1fr 1fr}
+  .cols,.crit,.res,.calc{grid-template-columns:1fr}
+  .refs{columns:1}
+  .siee div{grid-template-columns:1fr}
+  .step{grid-template-columns:auto 1fr}
+  .step .min{grid-column:2}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.prog .fill{transition:none}}
+</style>
+
+<header class="bar"><div class="wrap">
+  <nav aria-label="Secciones"><a href="#inicio">Inicio</a><a href="#recorrido">Recorrido</a><a href="#estacion">Estación</a><a href="#nota">Calcular nota</a><a href="#siee">SIEE</a><a href="#referencias">Referencias</a></nav>
+  <div class="prog" title="Pasos marcados en este navegador"><span id="progTxt">0 / 30 pasos</span><div class="track"><div class="fill" id="progFill"></div></div></div>
+</div></header>
+
+<main class="wrap" id="inicio">
+  <div class="hero">
+    <p class="eyebrow">Unidad 2 · Trayecto de actividades · Maestría en Educación Virtual · UPB</p>
+    <h1 style="margin-top:14px">Lúdica y Territorio <span>de la pantalla al movimiento</span></h1>
+    <p class="sub">Ambiente híbrido y gamificado para la Educación Física escolar del Oriente antioqueño, para adolescentes de 11 a 17 años de contextos rurales. Cuatro semanas, cuatro estaciones, ocho horas.</p>
+    <div class="chips"><span class="chip">Redes 2G</span><span class="chip">Celulares básicos</span><span class="chip">Videos 480p</span><span class="chip">PDF livianos</span><span class="chip">Respaldo sin conexión</span></div>
+    <svg class="ridge" viewBox="0 0 1040 120" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <path d="M0 120V70L90 40l70 28 80-46 90 52 80-30 100 42 90-58 110 60 80-32 120 50 90-30V120Z" fill="var(--ridge1)"/>
+      <path d="M0 120V92l100-24 80 20 90-34 100 38 110-30 90 26 120-42 100 40 90-18 160 30V120Z" fill="var(--ridge2)"/>
+    </svg>
+    <div class="q"><p class="eyebrow">Pregunta problematizadora</p><p class="big">¿Cómo puedo hacer que moverme sea parte de mi día a día en el entorno donde habito y no solo de la clase de Educación Física?</p></div>
+  </div>
+
+  <section id="recorrido">
+    <p class="eyebrow">Hilo conductor</p>
+    <h2>Lo que haces en una estación es la materia de la siguiente</h2>
+    <p class="lead">Durante cuatro semanas cada estudiante hace un ejercicio de autoconciencia y lo integra a su vida cotidiana: lee su propia rutina, la confronta con lo que creía, la convierte en pausas graduales y la comparte con su comunidad a través de un juego.</p>
+    <div class="thread">
+      <div style="--st:var(--moss)"><b>El diagnóstico</b>alimenta la reflexión.<small>Estación 1</small></div>
+      <div style="--st:var(--clay)"><b>La reflexión</b>orienta el plan de pausas.<small>Estación 2</small></div>
+      <div style="--st:var(--sun)"><b>Las bitácoras</b>alimentan el juego.<small>Estación 3</small></div>
+      <div style="--st:var(--sky)"><b>El juego</b>lo comparte la comunidad.<small>Estación 4</small></div>
+    </div>
+
+    <div class="trail">
+      <ol class="stops" id="stops" role="tablist" aria-label="Estaciones del trayecto"></ol>
+    </div>
+
+    <div class="weights">
+      <p class="eyebrow">Ponderación sobre la nota del trayecto · 8 horas</p>
+      <div class="wbar" id="wbar" style="margin-top:8px"></div>
+      <div class="wlegend" id="wlegend"></div>
+    </div>
+  </section>
+
+  <section id="estacion"><div id="panel" class="panel" role="tabpanel" aria-live="polite"></div></section>
+
+  <section id="nota">
+    <p class="eyebrow">Evaluación</p>
+    <h2>Calcula la nota del trayecto</h2>
+    <p class="lead">Cada criterio se valora de 1,0 a 5,0. Escribe tus valoraciones y verás la nota de cada estación y la del trayecto. Los valores iniciales son el ejemplo del documento, no resultados reales.</p>
+    <div class="calc">
+      <div class="scroll"><table>
+        <thead><tr><th>Estación</th><th class="num">Criterio 1</th><th class="num">Criterio 2</th><th class="num">Criterio 3</th><th class="num">Nota</th><th class="num">Peso</th><th class="num">Aporte</th></tr></thead>
+        <tbody id="calcBody"></tbody>
+      </table></div>
+      <div class="result" aria-live="polite">
+        <p class="eyebrow">Nota del trayecto</p>
+        <p class="score" id="total">4,29</p>
+        <p class="lvl" id="level">Desempeño Alto</p>
+        <p class="small">Rangos de uso frecuente: Bajo 1,0 a 2,9; Básico 3,0 a 3,9; Alto 4,0 a 4,5; Superior 4,6 a 5,0. Deben sustituirse por los oficiales del SIEE de la institución.</p>
+      </div>
+    </div>
+    <p class="formula">Nota = 0,10 × E1 + 0,30 × E2 + 0,30 × E3 + 0,30 × E4</p>
+    <p class="lead" style="margin-top:12px">E1 y E2 ponderan sus criterios 40 %, 40 % y 20 %. E3 y E4 ponderan un tercio cada uno, que equivale a los puntos 4/4/2, 12/12/6 y 10/10/10 de la tabla de criterios.</p>
+  </section>
+
+  <section id="siee">
+    <p class="eyebrow">Articulación normativa</p>
+    <h2>SIEE y Decreto 1290 de 2009</h2>
+    <p class="lead">El trayecto se desarrolla en una institución cuyo Sistema Institucional de Evaluación de Estudiantes valora de 1,0 a 5,0 y se enmarca en la evaluación formativa. Las ponderaciones 10/30/30/30 de la visualización no se modifican. El Decreto 1290 de 2009, hoy compilado en el Decreto 1075 de 2015, deja a cada establecimiento definir su escala y su equivalencia con la escala nacional (Superior, Alto, Básico y Bajo).</p>
+    <div class="siee">
+      <div><b>Evaluación continua y formativa</b><p>La Estación 1 funciona como diagnóstico. Cada estación tiene criterios de proceso con indicadores, observación y devolución del docente durante la semana, sin nota.</p></div>
+      <div><b>Estrategias de valoración integral</b><p>Formulario de diagnóstico, entrada reflexiva, bitácora, ficha de juego, argumentación oral, coevaluación entre grupos y lista de cotejo del docente.</p></div>
+      <div><b>Procesos de autoevaluación</b><p>Cada estación incluye una autoevaluación con los indicadores antes de entregar y una frase del estudiante sobre su propio aprendizaje.</p></div>
+      <div><b>Acciones de seguimiento y apoyo</b><p>Devolución escrita del docente (E1), pregunta de contraste (E2), revisión de la bitácora a mitad de semana (E3), reescritura permitida antes del cierre, pareja de apoyo (E3) y retroalimentación entre grupos (E4).</p></div>
+      <div><b>Escala y equivalencia nacional</b><p>Cada criterio sumativo se valora de 1,0 a 5,0 con descriptores de desempeño; la nota se expresa también como Desempeño Superior, Alto, Básico o Bajo según el SIEE.</p></div>
+      <div><b>Periodicidad de los informes</b><p>La nota del trayecto (cuatro semanas) se registra en el periodo académico correspondiente y se informa según la periodicidad del SIEE. La valoración de proceso queda como seguimiento cualitativo del docente.</p></div>
+    </div>
+  </section>
+
+  <section id="referencias">
+    <p class="eyebrow">Fundamentos</p>
+    <h2>Referencias</h2>
+    <div class="refs">
+      <p>Ausubel, D. P. (2002). <i>Adquisición y retención del conocimiento: Una perspectiva cognitiva</i>. Paidós.</p>
+      <p>Bandura, A. (1997). <i>Self-efficacy: The exercise of control</i>. W. H. Freeman.</p>
+      <p>Deterding, S., Dixon, D., Khaled, R., y Nacke, L. (2011). From game design elements to gamefulness: Defining "gamification". <i>Proceedings of the 15th International Academic MindTrek Conference</i> (pp. 9–15). ACM. <a href="https://doi.org/10.1145/2181037.2181040" target="_blank" rel="noopener">doi.org/10.1145/2181037.2181040</a></p>
+      <p>Google. (s. f.-a). <i>Formularios de Google</i> [Software]. <a href="https://www.google.com/intl/es/forms/about/" target="_blank" rel="noopener">google.com/intl/es/forms/about</a></p>
+      <p>Google. (s. f.-b). <i>Google Fit</i> [Aplicación móvil]. Google Play. <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.fitness" target="_blank" rel="noopener">play.google.com</a></p>
+      <p>Johnson, D. W., Johnson, R. T., y Holubec, E. J. (1999). <i>El aprendizaje cooperativo en el aula</i>. Paidós.</p>
+      <p>Kahoot! AS. (s. f.). <i>Kahoot!</i> [Software]. <a href="https://kahoot.com" target="_blank" rel="noopener">kahoot.com</a></p>
+      <p>Leontiev, A. N. (1978). <i>Actividad, conciencia y personalidad</i>. Ediciones Ciencias del Hombre.</p>
+      <p>Ministerio de Educación Nacional. (2009a). <i>Decreto 1290 de 2009</i>. Diario Oficial 47.322. <a href="https://www1.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=35954" target="_blank" rel="noopener">funcionpublica.gov.co</a></p>
+      <p>Ministerio de Educación Nacional. (2009b). <i>Documento No. 11: Fundamentaciones y orientaciones para la implementación del Decreto 1290 del 16 de abril de 2009</i>. <a href="https://www.mineducacion.gov.co/1780/articles-397381_recurso_1.pdf" target="_blank" rel="noopener">mineducacion.gov.co</a></p>
+      <p>Ministerio de Educación Nacional. (2010). <i>Orientaciones pedagógicas para la educación física, recreación y deporte</i>.</p>
+      <p>Ministerio de Educación Nacional. (2015). <i>Decreto 1075 de 2015: Decreto Único Reglamentario del Sector Educación</i>.</p>
+      <p>Organización Mundial de la Salud. (2021). <i>Directrices de la OMS sobre actividad física y comportamientos sedentarios</i>. <a href="https://iris.who.int/handle/10665/349729" target="_blank" rel="noopener">iris.who.int</a></p>
+      <p>Padlet. (s. f.). <i>Padlet</i> [Software]. <a href="https://padlet.com" target="_blank" rel="noopener">padlet.com</a></p>
+      <p>Piaget, J. (1978). <i>La equilibración de las estructuras cognitivas</i>. Siglo XXI. (Obra original publicada en 1975)</p>
+      <p>Ryan, R. M., y Deci, E. L. (2000). Self-determination theory and the facilitation of intrinsic motivation, social development, and well-being. <i>American Psychologist, 55</i>(1), 68–78. <a href="https://doi.org/10.1037/0003-066X.55.1.68" target="_blank" rel="noopener">doi.org/10.1037/0003-066X.55.1.68</a></p>
+      <p>Siemens, G. (2005). Connectivism: A learning theory for the digital age. <i>International Journal of Instructional Technology and Distance Learning, 2</i>(1), 3–10.</p>
+      <p>Vygotsky, L. S. (1979). <i>El desarrollo de los procesos psicológicos superiores</i>. Crítica.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Lúdica y Territorio: De la pantalla al movimiento.</b> Unidad 2 · Maestría en Educación Virtual · UPB · Modelo de Educación en Ambientes Virtuales (EAV).</p>
+    <p style="margin-top:6px">Presentado por Robinson Fernando Gómez García, Yeimel Esteban Echavarría Gil y Wilander Culma Estévez.</p>
+  </footer>
+</main>
+
+<script>
+const ST=[
+{id:1,name:"El Origen",kind:"Diagnóstico",verb:"Analizar",color:"var(--moss)",semana:1,cat:"Virtud del movimiento",
+ subcat:"Superación del sedentarismo; ruptura de la interfaz estática.",med:"Google Forms",peso:10,
+ punto:"Su propia rutina de movimiento y de pantalla, que funciona como el objeto sobre el cual se construye el trayecto (Leontiev, 1978).",
+ prop:"Analizar sus rutinas diarias de movimiento y de uso del celular, contrastándolas con la recomendación de actividad física para su edad, para reconocer en qué momentos de su cotidianidad (el recorrido de la casa al colegio, las labores de la finca, el rato libre de la tarde) existe una oportunidad real para el movimiento. El objetivo es que sume un compromiso de cambio viable dentro de las limitaciones de conectividad de su vereda.",
+ prod:"Diagnóstico personal de rutinas (formulario completo) y balance escrito de cinco a seis líneas titulado «Mi franja más quieta y mi franja con más posibilidad de movimiento».",
+ mirada:"El balance incluye una frase sobre lo que descubrió de su rutina y no esperaba.",
+ qcp:[["Qué","Rutinas propias de movimiento y de pantalla."],["Cómo","Diagnóstico en Google Forms y contraste con la recomendación de la OMS."],["Para qué","Ubicar franjas de oportunidad en su vida cotidiana en la vereda."]],
+ steps:[
+  ["in","Individual",10,"Ver el video «La virtud del movimiento en la vereda» (2 min 30 s, 480p; descargado en la sede o recibido por Bluetooth) y volver a verlo con pausas."],
+  ["in","Individual",15,"Leer la infografía de una página (PDF liviano) con la recomendación de la OMS para población de 5 a 17 años (en promedio, 60 minutos diarios de actividad física de intensidad moderada a vigorosa) y señalar con qué momentos de su día se compara."],
+  ["out","Individual",20,"Diligenciar el formulario de diagnóstico (una sola sección, sin imágenes, preguntas cerradas breves).","Responder en la copia impresa o en el cuaderno y digitarlo después en la sede."],
+  ["out","Individual",35,"Redactar y revisar el balance final de cinco a seis líneas, con una frase sobre lo que descubrió de su rutina."],
+  ["int","En pareja",10,"Comparar con un compañero las franjas de quietud y de oportunidad y anotar una coincidencia y una diferencia."],
+  ["int","Plenaria con el docente",20,"Participar en la plenaria guiada del encuentro presencial, donde se comentan hallazgos generales sin exponer datos personales de nadie."],
+  ["int","Individual con el docente",10,"Leer la devolución escrita del docente (en el cuaderno o por mensaje de texto), con dos preguntas orientadoras, y ajustar el balance."]],
+ proc:"Responde el formulario completo y con sinceridad; compara su rutina con la recomendación de la OMS; ajusta el balance a partir de la devolución. El docente observa el diligenciamiento, resuelve dudas y deja dos preguntas orientadoras («¿en qué momento del día te cuesta más moverte y por qué?»). Antes de entregar, el estudiante revisa estos indicadores.",
+ crit:[[4,"Formulario completo y coherente","Todas las secciones respondidas y respuestas consistentes entre sí."],[4,"Balance con franjas","Identifica al menos una franja de quietud y una de oportunidad, con una razón para cada una."],[2,"Entrega a tiempo","Dentro del plazo de la semana."]],
+ w:[.4,.4,.2],
+ propios:["Video «La virtud del movimiento en la vereda» (480p, 2 min 30 s)","Infografía de la recomendación de la OMS (PDF liviano)","Cuestionario de diagnóstico en Google Forms y su copia impresa"],
+ refs:["Google Forms (s. f.-a)","MEN (2010), Orientaciones pedagógicas para la educación física","OMS (2021), Directrices sobre actividad física"],
+ forma:"Individual (pasos 1 a 4 y 7), en pareja (paso 5), plenaria con el docente (paso 6).",
+ nota:"El estudiante no debía pasar a la acción de inmediato: primero necesitaba leer su propia rutina con una mirada crítica. Por eso el proceso de esta estación es analizar."},
+{id:2,name:"El Hábito",kind:"Reflexión",verb:"Evaluar",color:"var(--clay)",semana:2,cat:"Conflicto cognitivo",
+ subcat:"Percepción del cuerpo; transformación corporal y madurez.",med:"Padlet",peso:30,
+ punto:"Lo que cree sobre su rutina y su cuerpo frente a lo que muestran sus propios datos. Esa confrontación con el saber previo es la duda sembrada para reorganizarlo (Ausubel, 2002; Piaget, 1975/1978).",
+ prop:"Evaluar la coherencia entre lo que piensa de su rutina y de su cuerpo (cómo se percibe y cómo cambia en esta etapa) y lo que muestra su diagnóstico de la semana 1, contrastando datos y argumentos, para asumir una postura personal frente a su tiempo libre y comprometerse con un cambio concreto y posible en su entorno rural.",
+ prod:"Entrada reflexiva personal en Padlet (150 a 200 palabras) titulada «Lo que creía, lo que encontré», más dos comentarios argumentados a compañeros y la respuesta a un comentario recibido.",
+ mirada:"La entrada cierra con una frase sobre cómo cambió su forma de pensar al comparar sus datos.",
+ qcp:[["Qué","Coherencia entre creencias y hábitos."],["Cómo","Contraste entre su diagnóstico y la evidencia, expresado en una reflexión escrita."],["Para qué","Decidir con argumentos qué hará distinto con su tiempo libre."]],
+ steps:[
+  ["in","Individual",10,"Leer la infografía «Mi rutina frente a la evidencia» (imagen de menos de 300 KB, impresa o descargada en la sede)."],
+  ["in","Individual",10,"Leer el caso breve de un adolescente de una vereda del Oriente antioqueño que cree moverse bastante y descubre lo contrario al llevar la cuenta de su día, y anotar en qué se parece o se diferencia de su caso."],
+  ["out","Individual",10,"Con la guía impresa de tres pasos, releer su diagnóstico y anotar qué creía sobre su rutina y su cuerpo y qué le muestran sus datos."],
+  ["out","Individual",40,"Redactar el borrador de 150 a 200 palabras (qué creía, qué me muestra mi diagnóstico, qué cambiaría y por qué), cerrar con la frase sobre cómo cambió su forma de pensar, revisarlo y publicarlo en Padlet (solo texto).","Escribir el borrador en el bloc de notas del celular o en el cuaderno y publicarlo cuando haya señal."],
+  ["int","Asincrónica con pares",15,"Leer las entradas de al menos cuatro compañeros."],
+  ["int","Asincrónica con pares",20,"Comentar dos entradas con una pregunta que genere desacuerdo constructivo."],
+  ["int","Pares y docente",15,"Responder un comentario recibido y atender la pregunta de contraste que el docente publica en el muro a mitad de semana."]],
+ proc:"Relee su diagnóstico antes de escribir; plantea con claridad qué creía y qué encontró; responde a los comentarios recibidos. La rúbrica se comparte desde el inicio de la semana, el docente comenta en el muro mientras se construye la entrada y el estudiante puede reescribirla. Se autoevalúa con la rúbrica antes de publicar.",
+ crit:[[12,"Conflicto formulado con claridad","«Lo que creía» frente a «lo que encontré», con al menos un dato de su diagnóstico."],[12,"Argumentación","La postura y el cambio propuesto se apoyan en el diagnóstico y en la evidencia revisada."],[6,"Dos comentarios","Con pregunta o razón, y respuesta a uno recibido."]],
+ w:[.4,.4,.2],
+ propios:["Infografía «Mi rutina frente a la evidencia» (menos de 300 KB)","Caso breve del adolescente de la vereda","Guía impresa de reflexión en tres pasos"],
+ refs:["Padlet (s. f.)","Ausubel (2002)","Piaget (1975/1978)"],
+ forma:"Individual (pasos 1 a 4), asincrónica con pares (pasos 5 y 6), pares y docente (paso 7).",
+ nota:"Pedir cambiar hábitos de frente generaría rechazo. Por eso el diagnóstico de la semana 1 se vuelve la evidencia propia que genera el conflicto cognitivo. Padlet se usa en su forma más ligera (solo texto) y el borrador sin conexión evita que la escritura dependa de la señal."},
+{id:3,name:"La Acción",kind:"Pausas activas",verb:"Aplicar",color:"var(--sun)",semana:3,cat:"Autocuidado y autonomía",
+ subcat:"Regulación del tiempo libre; disciplina personal.",med:"Google Fit",peso:30,
+ punto:"La reflexión permite plantearse retos e identificar que implican acciones físicas guiadas (Vygotsky, 1979). El celular pasa de ser entretenimiento a ser un instrumento de registro y autorregulación (Bandura, 1997; Ryan y Deci, 2000).",
+ prop:"Aplicar un plan personal de pausas activas de cinco a diez minutos dentro de su jornada escolar y familiar, registrando lo realizado en Google Fit o, si no hay señal, en una bitácora sin conexión, para ganar autonomía en el cuidado de su cuerpo con los espacios y recursos que ya tiene en su vereda.",
+ prod:"Bitácora semanal de pausas activas con el plan (cuándo, dónde y cuál rutina), mínimo cinco pausas ejecutadas con su registro (captura de Google Fit o anotación en la bitácora) y una autoevaluación de tres frases.",
+ mirada:"La autoevaluación responde qué le funcionó, qué le costó y qué ajustaría.",
+ qcp:[["Qué","Un plan propio de pausas activas."],["Cómo","Ejecutándolo y registrándolo en Google Fit o en la bitácora de respaldo."],["Para qué","Cuidar su cuerpo de forma autónoma, sin depender de implementos ni de conexión permanente."]],
+ steps:[
+  ["in","Individual",10,"Ver el video «Cinco pausas activas sin implementos» (3 min, 480p) y repetirlo para probar los movimientos."],
+  ["in","Individual",10,"Revisar la cartilla ilustrada (PDF liviano) con cinco rutinas: cuello y hombros, espalda, cadera, piernas y respiración."],
+  ["int","Con el docente, encuentro presencial",10,"Instalar y configurar Google Fit.","Usar el WiFi de la sede o recibir el formato impreso de bitácora."],
+  ["out","Individual",15,"Diseñar el plan personal en el formato de bitácora, ubicando las pausas en momentos reales (entre clases, al llegar a casa, entre una labor y otra)."],
+  ["out","Individual",40,"Ejecutar mínimo cinco pausas durante la semana y registrar cada una en Google Fit (guarda los datos en el equipo y sincroniza cuando hay señal); leer el resumen de actividad que genera la aplicación.","Registrar cada pausa en la bitácora impresa."],
+  ["int","Pareja de apoyo",10,"Verificar con la pareja las pausas de ambos y darse una observación breve."],
+  ["int","Con el docente",10,"Revisar la bitácora con el docente a mitad de semana y ajustar el plan."],
+  ["out","Individual",15,"Escribir la autoevaluación de tres frases: qué me funcionó, qué me costó y qué ajustaría."]],
+ proc:"Ubica las pausas en momentos reales de su día; registra cada pausa el mismo día; ajusta el plan tras la observación del docente y de su pareja. El docente deja una observación escrita a mitad de semana y la pareja de apoyo se retroalimenta. El estudiante se autoevalúa con estos indicadores antes de entregar.",
+ crit:[[10,"Plan pertinente y viable","Indica cuándo, dónde y qué rutina, y es posible en su jornada sin implementos."],[10,"Evidencia de ejecución","Registro de mínimo cinco pausas."],[10,"Autoevaluación argumentada","Tres frases con al menos un ajuste propuesto."]],
+ w:[1/3,1/3,1/3],
+ propios:["Video «Cinco pausas activas sin implementos» (480p, 3 min)","Cartilla ilustrada de pausas activas (PDF liviano)","Formato de bitácora imprimible"],
+ refs:["Google Fit (s. f.-b), aplicación móvil","Bandura (1997)","Ryan y Deci (2000)"],
+ forma:"Individual (pasos 1, 2, 4, 5 y 8), con el docente (pasos 3 y 7), pareja de apoyo (paso 6).",
+ contingencia:"Google ha anunciado que Google Fit será reemplazado por Google Health durante 2026. Se conserva Google Fit por ser la herramienta de la visualización aprobada. Se confirma su disponibilidad en los celulares del grupo antes de iniciar; si ya no está disponible, se usa la aplicación que lo reemplace o solo la bitácora impresa.",
+ nota:"El trabajo pasa de pensar a aplicar: se practica una rutina conocida en un contexto propio, con un plan que el mismo estudiante diseña y ajusta. La bitácora impresa no sustituye a Google Fit; es el respaldo para que nadie pierda la evidencia por falta de señal."},
+{id:4,name:"El Equipo",kind:"Debate y juego",verb:"Evaluar y crear",color:"var(--sky)",semana:4,cat:"Bienestar y socialización",
+ subcat:"Interacción comunitaria.",med:"Kahoot! y Padlet",peso:30,
+ punto:"Lo aprendido en las semanas anteriores se comparte para sostener el bienestar con otros: aprendizaje cooperativo (Johnson et al., 1999), juego para mantener hábitos activos (Deterding et al., 2011) y red de interacciones del ecosistema híbrido (Siemens, 2005).",
+ prop:"Evaluar, mediante un debate grupal, las formas de promover el movimiento en la comunidad escolar y familiar, y crear a partir de ello un juego colaborativo con su banco de preguntas para Kahoot!, para compartir lo aprendido y ayudar a que moverse sea parte de la vida de la vereda y no solo del colegio.",
+ prod:"Grupal: ficha del juego colaborativo publicada en Padlet (nombre, reglas, materiales del entorno, adaptación a espacios pequeños) y tres preguntas del grupo para el Kahoot! de cierre. Individual: participación argumentada en el debate y en el Kahoot!.",
+ mirada:"Cierra con la frase «lo que aprendí en estas cuatro semanas y cómo lo aprendí».",
+ qcp:[["Qué","Maneras de promover el movimiento en comunidad."],["Cómo","Debate argumentado y diseño de un juego colaborativo con su banco de preguntas."],["Para qué","Socializar el bienestar y sostenerlo con otros."]],
+ steps:[
+  ["in","Individual",5,"Ver el video «Juegos de la vereda en movimiento» (2 min, 480p) con ejemplos de juegos tradicionales de la región adaptados al movimiento."],
+  ["in","Individual",10,"Leer en Padlet las reflexiones y bitácoras que los compañeros decidieron compartir (solo texto) y anotar una idea útil para el juego."],
+  ["out","Grupo de cuatro",30,"Redactar el borrador de la ficha del juego colaborativo y publicarla en Padlet.","Redactar el borrador sin conexión y publicarlo cuando haya señal."],
+  ["out","Individual",15,"Preparar tres argumentos para el debate."],
+  ["out","Grupo de cuatro",15,"Escribir tres preguntas de opción múltiple sobre lo aprendido en el trayecto para el Kahoot!."],
+  ["int","Plenaria presencial",20,"Debatir con guía del docente: «¿cómo hacemos para que moverse sea parte de la vereda y no solo del colegio?»."],
+  ["int","Equipos",15,"Jugar el Kahoot! proyectado por el docente, con un celular por equipo.","Si la señal falla, se aplican las mismas preguntas en tarjetas impresas."],
+  ["int","Entre grupos",10,"Dar retroalimentación en Padlet a la ficha de otro grupo (dos aspectos por destacar y uno por mejorar) y escribir la frase de cierre sobre lo que aprendió y cómo lo aprendió."]],
+ proc:"Todos los integrantes aportan a la ficha; escucha y responde a los argumentos de otros; usa lo aprendido en las semanas 1 a 3. El docente lleva una lista de cotejo durante el debate y el ensayo del juego, los grupos se coevalúan en Padlet y la ficha se ajusta antes de la versión final. El estudiante se autoevalúa con estos indicadores antes del encuentro.",
+ crit:[[10,"Argumentación individual en el debate","Postura clara con al menos una razón apoyada en lo trabajado en el trayecto."],[10,"Ficha del juego y preguntas","Ficha completa y viable con materiales del entorno y en espacios pequeños; preguntas claras y alineadas con lo aprendido."],[10,"Participación y retroalimentación","Participación en el Kahoot! (no la puntuación del juego) y retroalimentación entregada a otro grupo."]],
+ w:[1/3,1/3,1/3],
+ propios:["Video «Juegos de la vereda en movimiento» (480p, 2 min)","Guía de debate","Plantilla de ficha del juego colaborativo","Banco de preguntas para Kahoot!"],
+ refs:["Kahoot! AS (s. f.)","Padlet (s. f.)","Johnson et al. (1999)","Deterding et al. (2011)","Siemens (2005)"],
+ forma:"Individual (pasos 1, 2 y 4), grupo de cuatro (pasos 3 y 5), plenaria (paso 6), equipos (paso 7), entre grupos (paso 8).",
+ nota:"El cierre combina evaluar y crear: el debate pone a prueba lo aprendido y el juego lo convierte en un producto que se comparte con la comunidad. Kahoot! se usa con un dispositivo por equipo, la forma más viable con conectividad limitada, y se valora la participación y no la puntuación."}
+];
+const TYPE={in:["Input","in"],out:["Output","out"],int:["Interacción","int"]};
+const KEY="lyt-pasos-v1";
+let done={},cur=1;
+try{done=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){done={}}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(done))}catch(e){}};
+const $=s=>document.querySelector(s);
+const fmt=n=>n.toFixed(2).replace(".",",");
+const total=ST.reduce((a,s)=>a+s.steps.length,0);
+
+function counts(s){let c=0;s.steps.forEach((_,i)=>{if(done[s.id+"-"+i])c++});return c}
+function renderProgress(){
+  const c=ST.reduce((a,s)=>a+counts(s),0);
+  $("#progTxt").textContent=c+" / "+total+" pasos";
+  $("#progFill").style.width=(c/total*100)+"%";
+}
+function renderStops(){
+  $("#stops").innerHTML=ST.map(s=>`<li class="stop" style="--st:${s.color}"><button role="tab" id="tab${s.id}" aria-selected="${s.id===cur}" aria-controls="panel" data-id="${s.id}">
+    <span class="dot">${s.id}</span>
+    <span class="body"><span class="eyebrow">Semana ${s.semana}</span><h3>${s.name}</h3><span class="kind">${s.kind} · ${s.verb}</span>
+    <span class="meta">${s.med} · 2 h · ${s.peso} %</span><span class="done">${counts(s)}/${s.steps.length} pasos</span></span></button></li>`).join("");
+  document.querySelectorAll(".stop button").forEach(b=>b.onclick=()=>select(+b.dataset.id,true));
+}
+function renderWeights(){
+  $("#wbar").innerHTML=ST.map(s=>`<div style="--st:${s.color};flex:${s.peso}">${s.peso}%</div>`).join("");
+  $("#wlegend").innerHTML=ST.map(s=>`<span style="--st:${s.color}"><i></i>E${s.id} ${s.name}</span>`).join("");
+}
+function renderPanel(){
+  const s=ST[cur-1];
+  const mins=s.steps.reduce((a,x)=>a+x[2],0);
+  const bar=s.steps.map(x=>`<span class="t-${x[0]}" style="flex:${x[2]}" title="${x[2]} min"></span>`).join("");
+  const sum=k=>s.steps.filter(x=>x[0]===k).reduce((a,x)=>a+x[2],0);
+  const steps=s.steps.map((x,i)=>{const k=s.id+"-"+i,ch=!!done[k];
+    return `<li class="step${ch?" checked":""}"><input type="checkbox" id="c${k}" data-k="${k}" ${ch?"checked":""} aria-label="Marcar paso ${i+1} como hecho">
+    <div class="tx"><div class="tags"><span class="tag ${x[0]}">${TYPE[x[0]][0]}</span><span class="who">${x[1]}</span></div>
+    <p><label for="c${k}" style="cursor:pointer">${x[3]}</label></p>${x[4]?`<span class="off"><b>Sin conexión:</b> ${x[4]}</span>`:""}</div>
+    <span class="min">${x[2]} min</span></li>`}).join("");
+  const crit=s.crit.map(c=>`<div class="crow"><span class="pct">${c[0]} %</span><div><b>${c[1]}</b><br><span style="color:var(--muted)">${c[2]}</span></div></div>`).join("");
+  $("#panel").style.setProperty("--st",s.color);
+  $("#panel").setAttribute("aria-labelledby","tab"+s.id);
+  $("#panel").innerHTML=`
+  <div class="panel-head"><div><span class="verb">${s.verb}</span><p class="eyebrow">Estación ${s.id} · ${s.kind}</p><h2>${s.name}</h2></div></div>
+  <dl class="facts"><div><dt>Semana</dt><dd>${s.semana}</dd></div><div><dt>Categoría</dt><dd>${s.cat}</dd></div><div><dt>Mediación</dt><dd>${s.med}</dd></div><div><dt>Tiempo</dt><dd>2 h</dd></div><div><dt>Ponderación</dt><dd>${s.peso} %</dd></div></dl>
+  <div class="cols"><div>
+    <h3>Propósito</h3><p>${s.prop}</p>
+    <h3 style="margin-top:22px">Punto de partida</h3><p>${s.punto}</p>
+    <h3 style="margin-top:22px">Producto</h3><p>${s.prod}</p><p style="color:var(--muted)">${s.mirada}</p></div>
+    <div><h3>Qué, cómo y para qué</h3><div class="qcp">${s.qcp.map(q=>`<div><b>${q[0]}</b>${q[1]}</div>`).join("")}</div>
+    <p class="who" style="margin-top:14px"><b>Categoría de la visualización:</b> ${s.cat}. ${s.subcat}</p></div></div>
+  <div class="block"><h3 class="sub-h">Ruta de la semana</h3>
+    <p class="who">${s.steps.length} acciones · ${mins} min en total (${mins/60} h). ${s.forma}</p>
+    <div class="tbar" role="img" aria-label="Distribución del tiempo: input ${sum("in")} min, output ${sum("out")} min, interacción ${sum("int")} min">${bar}</div>
+    <div class="tleg"><span><i class="t-in"></i>Input ${sum("in")} min</span><span><i class="t-out"></i>Output ${sum("out")} min</span><span><i class="t-int"></i>Interacción ${sum("int")} min</span></div>
+    <ol class="steps">${steps}</ol></div>
+  <div class="block"><h3 class="sub-h">Cómo se evalúa</h3>
+    <div class="crit"><div class="card"><h4>Proceso</h4><span class="tagline">Formativo, sin nota</span><p style="font-size:15px">${s.proc}</p></div>
+    <div class="card"><h4>Producto</h4><span class="tagline">Sumativo, ${s.peso} % · valoración de 1,0 a 5,0 según el SIEE</span>${crit}</div></div></div>
+  <div class="block"><h3 class="sub-h">Recursos y medios</h3>
+    <div class="res"><div class="card"><h4>Propios</h4><ul>${s.propios.map(r=>`<li>${r}</li>`).join("")}</ul></div>
+    <div class="card"><h4>Referenciados</h4><ul>${s.refs.map(r=>`<li>${r}</li>`).join("")}</ul></div></div>
+    ${s.contingencia?`<div class="note"><b>Contingencia.</b> ${s.contingencia}</div>`:""}</div>
+  <div class="block"><h3 class="sub-h">Por qué está diseñada así</h3><div class="note" style="margin-top:0">${s.nota}</div></div>
+  <div class="nav2"><button class="btn" id="prev" ${cur===1?"hidden":""}>← ${cur>1?ST[cur-2].name:""}</button><button class="btn" id="next" ${cur===4?"hidden":""} style="margin-left:auto">${cur<4?ST[cur].name:""} →</button></div>`;
+  document.querySelectorAll(".step input").forEach(i=>i.onchange=()=>{
+    if(i.checked)done[i.dataset.k]=1;else delete done[i.dataset.k];
+    save();i.closest(".step").classList.toggle("checked",i.checked);renderProgress();renderStops();});
+  const p=$("#prev"),n=$("#next");
+  if(p)p.onclick=()=>select(cur-1,true);if(n)n.onclick=()=>select(cur+1,true);
+}
+function select(id,scroll){
+  cur=id;renderStops();renderPanel();
+  try{history.replaceState(null,"","#e"+id)}catch(e){}
+  if(scroll)$("#estacion").scrollIntoView({behavior:"smooth",block:"start"});
+}
+/* calculator */
+const EX=[[4.5,4.0,5.0],[4.0,3.5,5.0],[4.5,4.5,4.0],[5.0,4.0,4.5]];
+function renderCalc(){
+  $("#calcBody").innerHTML=ST.map((s,i)=>`<tr style="--st:${s.color}"><td><span class="st-name"><i></i>E${s.id} · ${s.name}</span></td>
+   ${EX[i].map((v,j)=>`<td class="num"><input class="gin" type="number" min="1" max="5" step="0.1" value="${v}" id="g${i}${j}" aria-label="Estación ${s.id}, criterio ${j+1}, de 1,0 a 5,0" inputmode="decimal"></td>`).join("")}
+   <td class="num" id="n${i}"></td><td class="num">${s.peso} %</td><td class="num" id="a${i}"></td></tr>`).join("");
+  document.querySelectorAll(".gin").forEach(el=>el.oninput=calc);calc();
+}
+function calc(){
+  let t=0;
+  ST.forEach((s,i)=>{
+    let n=0;
+    s.w.forEach((w,j)=>{let v=parseFloat($("#g"+i+j).value.replace(",","."));if(isNaN(v))v=1;v=Math.min(5,Math.max(1,v));n+=w*v});
+    const a=s.peso/100*n;t+=a;
+    $("#n"+i).textContent=fmt(n);$("#a"+i).textContent=fmt(a);
+  });
+  $("#total").textContent=fmt(t);
+  const r=+t.toFixed(2);
+  $("#level").textContent="Desempeño "+(r<3?"Bajo":r<4?"Básico":r<4.6?"Alto":"Superior");
+}
+renderWeights();renderCalc();renderProgress();
+const m=/^#e([1-4])$/.exec(location.hash);if(m)cur=+m[1];
+renderStops();renderPanel();
+</script>
+
+</body></html>
